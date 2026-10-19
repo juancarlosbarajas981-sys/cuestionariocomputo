@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cuestionario: Redes de cómputo</title>
+<style>
+:root{--bg:#dcebf5;--fg:#14213d;--card:#ffffff;--accent:#fca311;--line:#b9cfe0;--ok:#2e7d32;--okbg:#e3f3e4;--bad:#c62828;--badbg:#fbe4e4;--muted:#4a5568;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14213d;--fg:#f5f1e8;--card:#1f3260;--line:#33477a;--ok:#8fd694;--okbg:#1d3b2a;--bad:#ff9b9b;--badbg:#4a2230;--muted:#b8c2d6}}
+:root[data-theme="dark"]{--bg:#14213d;--fg:#f5f1e8;--card:#1f3260;--line:#33477a;--ok:#8fd694;--okbg:#1d3b2a;--bad:#ff9b9b;--badbg:#4a2230;--muted:#b8c2d6}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Trebuchet MS",Arial,sans-serif;min-height:100vh;
+background-image:radial-gradient(circle at 100% 100%,rgba(252,163,17,.18) 0,transparent 45%),radial-gradient(circle at 0 0,rgba(142,202,230,.35) 0,transparent 40%)}
+main{max-width:640px;margin:0 auto;padding:24px 16px 40px}
+h1{font-size:1.6rem;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 20px;font-size:.95rem}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px}
+.bar>div{height:100%;width:0;background:var(--accent);transition:width .3s}
+.count{font-size:.9rem;color:var(--muted);margin-bottom:16px}
+.card{background:var(--card);border-radius:16px;padding:20px;border:1px solid var(--line)}
+.q{font-size:1.2rem;font-weight:700;margin:0 0 16px;line-height:1.35}
+.opt{display:block;width:100%;text-align:left;margin:0 0 10px;padding:14px;border-radius:12px;border:2px solid var(--line);background:transparent;color:inherit;font:inherit;font-size:1rem;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.ok{border-color:var(--ok);background:var(--okbg)}
+.opt.bad{border-color:var(--bad);background:var(--badbg)}
+.opt:disabled{cursor:default}
+.fb{margin:12px 0 0;padding:12px;border-radius:12px;background:var(--bg);font-size:.95rem;line-height:1.4}
+.next{margin-top:16px;padding:14px 22px;border:0;border-radius:12px;background:var(--accent);color:#14213d;font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+.score{font-size:3rem;font-weight:700;margin:8px 0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>Cuestionario: Redes de cómputo</h1>
+<p class="sub">Responde las 10 preguntas sobre la exposición. Equipo: Juan Carlos Barajas, Yael Castillo y Gael.</p>
+<div id="quiz">
+<div class="bar"><div id="prog"></div></div>
+<div class="count" id="count"></div>
+<div class="card">
+<p class="q" id="q"></p>
+<div id="opts"></div>
+<div class="fb hide" id="fb"></div>
+<button class="next hide" id="next" type="button">Siguiente</button>
+</div>
+</div>
+<div class="card hide" id="end">
+<p class="q">¡Terminaste el cuestionario!</p>
+<div class="score" id="score"></div>
+<p id="msg"></p>
+<button class="next" id="again" type="button">Volver a intentar</button>
+</div>
+</main>
+<script>
+var Q=[
+["¿Cómo se llama cada equipo conectado a una red?",["Nodo o host","Router","Protocolo","Topología"],0,"Cada equipo conectado a la red se llama nodo o host."],
+["¿Qué tipo de red es la de una casa o una escuela?",["WAN","LAN","MAN","Internet"],1,"LAN significa red de área local."],
+["¿Cuál es el ejemplo más grande de una red WAN?",["Una computadora","El Wi-Fi de una casa","Internet","Un salón de cómputo"],2,"Internet conecta redes de todo el mundo, por eso es una WAN."],
+["¿En qué topología todos los equipos se conectan a un switch central?",["Bus","Anillo","Estrella","Línea"],2,"La topología en estrella es la más usada hoy."],
+["¿Qué pasa en la topología de bus si se daña el cable principal?",["Solo falla un equipo","Falla toda la red","No pasa nada","Se acelera la red"],1,"En el bus, todos dependen de un solo cable principal."],
+["¿Qué dispositivo conecta redes y dirige los datos hacia Internet?",["Router","Switch","Cable Ethernet","Bluetooth"],0,"El router dirige los datos entre redes y hacia Internet."],
+["¿Qué medio de transmisión envía los datos con luz?",["Par trenzado","Wi-Fi","Bluetooth","Fibra óptica"],3,"La fibra óptica usa luz y es muy rápida."],
+["¿Cuántas capas tiene el modelo TCP/IP que vimos?",["Dos","Tres","Cuatro","Siete"],2,"Aplicación, transporte, internet y acceso a la red."],
+["¿Cómo está formada una dirección IPv4, como 192.168.1.10?",["Por letras","Por cuatro números del 0 al 255","Por dos números","Por una palabra"],1,"Una IPv4 tiene cuatro números separados por puntos."],
+["¿Para qué sirve un firewall?",["Para aumentar la velocidad","Para guardar archivos","Para filtrar el tráfico que entra y sale de la red","Para dar Wi-Fi"],2,"El firewall filtra el tráfico y ayuda a proteger la red."]
+];
+var i=0,score=0,done=false;
+var $=function(id){return document.getElementById(id)};
+function show(){
+done=false;var q=Q[i];
+$("q").textContent=q[0];$("count").textContent="Pregunta "+(i+1)+" de "+Q.length;
+$("prog").style.width=(i/Q.length*100)+"%";
+$("fb").className="fb hide";$("next").className="next hide";
+var o=$("opts");o.innerHTML="";
+q[1].forEach(function(t,k){var b=document.createElement("button");b.type="button";b.className="opt";b.textContent=t;b.onclick=function(){pick(k)};o.appendChild(b)});
+}
+function pick(k){
+if(done)return;done=true;var q=Q[i];var bs=$("opts").children;
+for(var j=0;j<bs.length;j++){bs[j].disabled=true;if(j===q[2])bs[j].classList.add("ok")}
+var good=k===q[2];if(good)score++;else bs[k].classList.add("bad");
+$("fb").textContent=(good?"¡Correcto! ":"Incorrecto. ")+q[3];
+$("fb").className="fb";
+$("next").textContent=i===Q.length-1?"Ver resultado":"Siguiente";
+$("next").className="next";
+}
+$("next").onclick=function(){i++;if(i>=Q.length)finish();else show()};
+function finish(){
+$("quiz").className="hide";$("end").className="card";
+$("score").textContent=score+" / "+Q.length;
+$("msg").textContent=score>=9?"¡Excelente! Dominas el tema.":score>=6?"¡Muy bien! Repasa un poco más.":"Revisa la exposición e inténtalo de nuevo.";
+}
+$("again").onclick=function(){i=0;score=0;$("end").className="card hide";$("quiz").className="";show()};
+show();
+</script>
+</body>
+</html>
